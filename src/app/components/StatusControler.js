@@ -4,19 +4,43 @@ import { statuses } from '@/ultis/constances';
 import { Listbox, Transition } from '@headlessui/react';
 import { ChevronUpDownIcon } from '@heroicons/react/20/solid';
 import { Fragment, useState } from 'react';
+import { useTodoContext } from '../context/TodoContext';
 
+const updateStatusAPI = async (updatedTodo) => {
+  const { id } = updatedTodo;
 
+  return fetch(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updatedTodo),
+  })
+    .then((res) => res.json())
+    .then((res) => res)
+    .catch((error) => {
+      console.error(error);
+      return {};
+    });
+};
 
-const StatusControler = ({todo}) => {
-    const [selected, setSelected] = useState(
-      statuses.find((status) => status.id === todo.status) || {
-        id: '',
-        name: '',
-        className: '',
-      }
+const StatusControler = ({ todo }) => {
+  const { updateTodo } = useTodoContext();
+  const [selected, setSelected] = useState(
+    statuses.find((status) => status.id === todo.status) || {
+      id: '',
+      name: '',
+      className: '',
+    }
   );
+
+  const handleChangeStatus = (status) => {
+    const updatedTodo = { ...todo, status: status.id };
+    updateStatusAPI(updatedTodo).then(() => {
+      setSelected(status);
+      updateTodo && updateTodo(updatedTodo);
+    });
+  };
   return (
-    <Listbox value={selected} onChange={setSelected}>
+    <Listbox value={selected} onChange={handleChangeStatus}>
       {({ open }) => (
         <>
           <div className='relative'>
@@ -33,9 +57,7 @@ const StatusControler = ({todo}) => {
                 <span
                   sr-only
                   className='text-green-700 bg-green-50 ring-green-600/20'
-                >
-
-                </span>
+                ></span>
                 <span
                   sr-only
                   className='text-gray-600 bg-gray-50 ring-gray-500/10'
@@ -91,6 +113,6 @@ const StatusControler = ({todo}) => {
       )}
     </Listbox>
   );
-}
+};
 
 export default StatusControler

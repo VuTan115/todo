@@ -4,9 +4,20 @@ import { useTodoContext } from '../context/TodoContext';
 import { EllipsisVerticalIcon } from '@heroicons/react/20/solid';
 import EditTodoForm from './EditTodoForm';
 import { classNames } from '@/ultis/classname';
-const ActionMenu = ({ todo }) => {
+const deleteTodoAPI = async (id) => {
+  return fetch(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/${id}`, {
+    method: 'DELETE',
+  }).then((result) => result.json());
+};
 
+const ActionMenu = ({ todo }) => {
   const { removeTodo, updateTodo } = useTodoContext();
+
+  const handleRemoveTodo = (id) => {
+    deleteTodoAPI(id).then((res) => {
+      removeTodo && removeTodo(id);
+    });
+  };
 
   return (
     <Popover as='div' className='relative flex-none'>
@@ -32,7 +43,7 @@ const ActionMenu = ({ todo }) => {
           <EditTodoForm updateTodo={updateTodo} todo={todo} />
 
           <button
-            onClick={() => removeTodo(todo.id)}
+            onClick={() => handleRemoveTodo(todo.id)}
             className={classNames(
               'block px-3 py-1 text-sm leading-6 text-gray-900 w-full text-left hover:bg-gray-50'
             )}
@@ -44,6 +55,6 @@ const ActionMenu = ({ todo }) => {
       </Transition>
     </Popover>
   );
-}
+};
 
 export default ActionMenu

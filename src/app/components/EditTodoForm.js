@@ -3,7 +3,28 @@ import { classNames } from '@/ultis/classname';
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment, useState } from 'react';
 
-const EditTodoForm = ({todo, updateTodo }) => {
+const editTodoAPI = async (id, todo) => {
+  const updatedTodo = {
+    name: todo.name,
+    description: todo.description,
+    status: todo.status,
+  };
+  return fetch(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(updatedTodo),
+  })
+    .then((result) => result.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+      return {};
+    });
+};
+
+const EditTodoForm = ({ todo, updateTodo }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [editedTodo, setEditedTodo] = useState(todo);
 
@@ -15,10 +36,13 @@ const EditTodoForm = ({todo, updateTodo }) => {
       name: title.value,
       description: description.value,
     };
-    setEditedTodo(updatedTodo);
-    updateTodo && updateTodo(updatedTodo);
-    setIsOpen(false);
-    document.getElementById('close-options').click();// trig lỏ để đóng cái menu edit
+
+    editTodoAPI(todo.id, updatedTodo).then((res) => {
+      setEditedTodo(res);
+      updateTodo && updateTodo(res);
+      setIsOpen(false);
+      document.getElementById('close-options').click(); // trig lỏ để đóng cái menu edit
+    });
   };
 
   return (
@@ -89,7 +113,7 @@ const EditTodoForm = ({todo, updateTodo }) => {
                             autoComplete='title'
                             required
                             defaultValue={editedTodo.name}
-                            className='block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6'
+                            className='px-2 block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6'
                           />
                         </div>
                       </div>
@@ -110,7 +134,7 @@ const EditTodoForm = ({todo, updateTodo }) => {
                             autoComplete='current-description'
                             rows={5}
                             required
-                            className='block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6'
+                            className='px-2 block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6'
                           />
                         </div>
                       </div>

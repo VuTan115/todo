@@ -2,23 +2,45 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment, useState } from 'react';
 import { useTodoContext } from '../context/TodoContext';
+
+const addTodoAPI = async (todo) => {
+  const newTodo = {
+    name: todo.name,
+    description: todo.description,
+  };
+  return fetch(process.env.NEXT_PUBLIC_API_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(newTodo),
+  })
+    .then((result) => result.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.log(error);
+      return {};
+    });
+};
+
 const AddTodoForm = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const {addTodo} = useTodoContext()
-  const handleAddTodo = (e) => {
+  const { addTodo } = useTodoContext();
+  const handleAddTodo = async (e) => {
     e.preventDefault();
     const { title, description } = e.target.elements;
     const todo = {
-      id: Date.now(),
       name: title.value,
       description: description.value,
-      status: 1,
     };
 
-    addTodo && addTodo(todo);
-    setIsOpen(false);
-    e.target.reset();
-  }
+    addTodoAPI(todo).then((res) => {
+      console.log(res);
+      addTodo && addTodo(res);
+      setIsOpen(false);
+      e.target.reset();
+    });
+  };
 
   return (
     <>
@@ -66,7 +88,11 @@ const AddTodoForm = () => {
                     Add New Todo
                   </Dialog.Title>
                   <div>
-                    <form action='#' onSubmit={handleAddTodo} className='space-y-6'>
+                    <form
+                      action='#'
+                      onSubmit={handleAddTodo}
+                      className='space-y-6'
+                    >
                       <div>
                         <label
                           htmlFor='title'
@@ -81,7 +107,7 @@ const AddTodoForm = () => {
                             type='title'
                             autoComplete='title'
                             required
-                            className='block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6'
+                            className='px-2 block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6'
                           />
                         </div>
                       </div>
@@ -101,12 +127,10 @@ const AddTodoForm = () => {
                             autoComplete='current-description'
                             rows={5}
                             required
-                            className='block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6'
+                            className='px-2 block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6'
                           />
                         </div>
                       </div>
-
-
 
                       <div>
                         <button
